@@ -91,13 +91,17 @@ async function run() {
       res.send(result);
     });
 
+    // enabled: !loading &&
+    //   !!user?.email &&
+    //   !!localStorage.getItem("access-token"),
+
     // security layer: verifyJWT
     // email same
     // check admin
     app.get("/users/admin/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       if (req.decoded.email !== email) {
-        res.send({admin: false});
+        return res.send({admin: false});
       }
       const query = {email: email};
       const user = await usersCollection.findOne(query);
@@ -121,6 +125,21 @@ async function run() {
     // menu related api
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/menu", verifyJWT, verifyAdmin, async (req, res) => {
+      const newItem = req.body;
+      const result = await menuCollection.insertOne(newItem);
+      res.send(result);
+    });
+
+    app.delete("/menu/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = {_id: new ObjectId(id)};
+      const result = await menuCollection.deleteOne(query);
+      console.log(result);
       res.send(result);
     });
 
